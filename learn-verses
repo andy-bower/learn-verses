@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: (c) Copyright 2024 Andrew Bower
+
+# State machine:
+#   HEADER --[underlining]--> CONTENT
+state="HEADER"
+
+# Patterns to canonicalise lines for comparison
+declare -a strip_regexes=( \
+  "s/[[:punct:]]//g" \
+  "s/^[[:space:]]*//" \
+  "s/[[:space:]]*$//g" \
+  "s/[[:space:]]+/\x20/g" \
+  "s/^[[:space:][:punct:][:digit:]]+//g" \
+)
+function strip {
+  sed -r $(for regex in "${strip_regexes[@]}"; do printf -- '-e %s ' "$regex"; done) | tr [:upper:] [:lower:]
+}
+
+# Read each line of reference text
+while IFS='' read -u4 -r LINE
+do
+  if [[ $state == HEADER || "$LINE" =~ ^[[:space:]]*$ ]]
+  then
+    if [[ "$LINE" =~ ^[[:space:]]*[-=]+[[:space:]]*$ ]]
+    then
+      state=CONTENT
+    fi
+    printf "%s\n" $LINE
+    continue
+  fi
+
+  # Get the user's attempt  
+  IFS='' read -p '> ' -e -r ATTEMPT
+
+  # Canonicalise both lines
+  a=$(echo "$ATTEMPT" | strip)
+  b=$(echo "$LINE" | strip)
+  printf '= %s\n' "$LINE"
+
+  # Check for correctness
+  if [[ "$a" != "$b" ]]
+  then
+    echo -e "\033[0;91mMistake\033[0m"
+  fi
+done 4< "$1"
