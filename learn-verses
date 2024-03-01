@@ -20,7 +20,7 @@ function strip {
 }
 
 # Read each line of reference text
-while IFS='' read -u4 -r LINE
+while IFS= read -u4 -r LINE
 do
   if [[ $state == HEADER || "$LINE" =~ ^[[:space:]]*$ ]]
   then
@@ -28,7 +28,7 @@ do
     then
       state=CONTENT
     fi
-    printf "%s\n" $LINE
+    printf "%s\n" "$LINE"
     continue
   fi
 
