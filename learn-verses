@@ -26,6 +26,9 @@ function strip {
   sed -r $(for regex in "${strip_regexes[@]}"; do printf -- '-e %s ' "$regex"; done) | tr [:upper:] [:lower:]
 }
 
+count_good=0
+count_bad=0
+
 # Read each line of reference text
 while IFS= read -u4 -r LINE
 do
@@ -50,6 +53,11 @@ do
   # Check for correctness
   if [[ "$a" != "$b" ]]
   then
+    count_bad=$(( $count_bad + 1))
     echo -e "\033[0;91mMistake\033[0m"
+  else
+    count_good=$(( $count_good + 1))
   fi
 done 4< "$1"
+
+printf "Score: %d%% (%d correct, %d incorrect lines)\n" $(( 100 * $count_good / $count_bad )) $count_good $count_bad
