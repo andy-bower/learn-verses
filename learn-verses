@@ -61,4 +61,5 @@ do
   fi
 done 4< "$1"
 
-printf "Score: %d%% (%d correct, %d incorrect lines)\n" $(( 100 * $count_good / $count_bad )) $count_good $count_bad
+count_all=$(( $count_good + $count_bad ))
+printf "Score: %d%% (%d correct, %d incorrect lines)\n" $(( 100 * $count_good / $count_all )) $count_good $count_bad
