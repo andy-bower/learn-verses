@@ -28,6 +28,7 @@ function strip {
 
 count_good=0
 count_bad=0
+finished=false
 
 # Read each line of reference text
 while IFS= read -u4 -r LINE
@@ -43,7 +44,7 @@ do
   fi
 
   # Get the user's attempt  
-  IFS='' read -p '> ' -e -r ATTEMPT
+  $finished || IFS='' read -p '> ' -e -r ATTEMPT || finished=true
 
   # Canonicalise both lines
   a=$(echo "$ATTEMPT" | strip)
@@ -51,10 +52,10 @@ do
   printf '= %s\n' "$LINE"
 
   # Check for correctness
-  if [[ "$a" != "$b" ]]
+  if [[ "$a" != "$b" ]] || $finished
   then
     count_bad=$(( $count_bad + 1))
-    echo -e "\033[0;91mMistake\033[0m"
+    ! $finished && echo -e "\033[0;91mMistake\033[0m"
   else
     count_good=$(( $count_good + 1))
   fi
